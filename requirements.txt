@@ -1,0 +1,9 @@
+google-genai
+python-dotenv
+torch
+torchvision
+transformers
+opencv-python
+numpy
+pillow
+scipy
