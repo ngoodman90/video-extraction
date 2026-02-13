@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(/Users/noamgoodman/dev/video-extraction/.venv/bin/pip freeze:*)",
+      "Bash(/Users/noamgoodman/dev/video-extraction/.venv/bin/python:*)",
+      "Bash(/Users/noamgoodman/dev/video-extraction/.venv/bin/pip install:*)",
+      "Bash(ffprobe:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}
