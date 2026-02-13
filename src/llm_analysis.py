@@ -57,7 +57,10 @@ Return ONLY valid JSON:
     )
 
     # 6. Parse and Return
-    return json.loads(response.text)
+    result = json.loads(response.text)
+    if isinstance(result, list):
+        result = {"matches": result}
+    return result
 
 
 # Example Usage

@@ -43,12 +43,12 @@ class TemporalVideoGrounder:
 
     def __init__(
             self,
-            model_name: str = "openai/clip-vit-large-patch14-336",
+            model_name: str = "openai/clip-vit-base-patch16",
             device: Optional[str] = None
     ):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model = CLIPModel.from_pretrained(model_name).to(self.device)
-        self.processor = CLIPProcessor.from_pretrained(model_name)
+        self.processor = CLIPProcessor.from_pretrained(model_name, use_fast=True)
         self.model.eval()
 
     def extract_frames(
@@ -100,7 +100,7 @@ class TemporalVideoGrounder:
             self,
             frames: List[np.ndarray],
             text_query: str,
-            batch_size: int = 16
+            batch_size: int = 64
     ) -> np.ndarray:
         """
         Compute CLIP similarity scores between frames and text.
@@ -111,8 +111,9 @@ class TemporalVideoGrounder:
         text_embeds = self._encode_texts(queries)  # (num_queries, dim)
 
         scores = []
+        total_batches = (len(frames) + batch_size - 1) // batch_size
 
-        for i in range(0, len(frames), batch_size):
+        for batch_idx, i in enumerate(range(0, len(frames), batch_size)):
             batch_frames = frames[i:i + batch_size]
             pil_images = [Image.fromarray(f) for f in batch_frames]
 
@@ -125,6 +126,7 @@ class TemporalVideoGrounder:
                 sims = (image_embeds @ text_embeds.T).mean(dim=-1)
 
             scores.extend(sims.cpu().numpy())
+            print(f"  Batch {batch_idx + 1}/{total_batches} ({i + len(batch_frames)}/{len(frames)} frames)", flush=True)
 
         return np.array(scores)
 
@@ -341,7 +343,7 @@ def extract_segments(video_path: str, user_prompt: str) -> dict:
     segments = grounder.ground(
         full_path,
         user_prompt,
-        sample_rate=1,
+        sample_rate=24,
         min_duration=0.5,
         max_duration=30.0,
         gap_tolerance=2.0,
